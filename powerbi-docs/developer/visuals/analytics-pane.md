@@ -20,11 +20,67 @@ This article discusses how Power BI visuals with API v2.5.0 can present and mana
 
 ## Manage the Analytics pane
 
-Just as you'd manage properties in the [**Format** pane](./custom-visual-develop-tutorial-format-options.md), you manage the **Analytics** pane by defining an object in the visual's *capabilities.json* file.
+Managing properties in the [**Analytics** pane](../../transform-model/desktop-analytics-pane.md) is very similar to the managing properties in the [**Format** pane](./custom-visual-develop-tutorial-format-options.md). You define an [object](objects-properties.md) in the visual's [*capabilities.json*](capabilities.md) file.
 
 For the **Analytics** pane, the differences are as follows:
 
-* Under the object's definition, you add an **objectCategory** field with a value of 2.
+### [API 5.0+](#tab/API-5.0+)
+* Under the object's definition, add only the object name, property name and type as explained [here](./format-pane.md).
+Example: 
+
+```json
+{
+  "objects": {
+    "YourAnalyticsPropertiesCard": {
+      "properties": {
+        "show": {
+          "type": {
+            "bool": true
+          }
+        },
+      ... //any other properties for your Analytics card
+      }
+    }
+  ...
+  }
+}
+```
+
+* In formatting settings card specify that this card belongs to analytics pane by set card analyticsPane variable to true, By default card `analyticsPane` variable is false, See the implementations below:
+
+#### [Using FormattingModel Utils](#tab/API-5.0+/Impl-FormattingModel-Utils)
+```typescript
+class YourAnalyticsCardSettings extends FormattingSettingsCard {
+    show = new formattingSettings.ToggleSwitch({
+        name: "show",
+        displayName: undefined,
+        value: false,
+        topLevelToggle: true
+    });
+
+    name: string = "YourAnalyticsPropertiesCard";
+    displayName: string = "Your analytics properties card's name";
+    analyticsPane: boolean = true; // <===  Add and set analyticsPane variable to true 
+    slices = [this.show];
+}
+```
+
+#### [Without FormattingModel Utils](#tab/API-5.0+/Without-FormattingModel-Utils)
+```typescript
+ const averageLineCard: powerbi.visuals.FormattingCard = {
+    displayName: "Your analytics properties card's name",
+    uid: "yourAnalyticsCard_uid",
+    analyticsPane: true, // <===  Add and set analyticsPane variable to true 
+    groups: [{
+        displayName: undefined,
+        uid: "yourAnalyticsCard_group_uid",
+        slices: [this.show],
+    }]
+};
+```
+
+### [Old API's](#tab/Old-API)
+* Under the object's definition, add the `displayName` and an `objectCategory` field with a value of `2`.
 
     > [!NOTE]
     > The optional `objectCategory` field was introduced in API 2.5.0. It defines the aspect of the visual that the object controls (1 = Formatting, 2 = Analytics). `Formatting` is used for such elements as look and feel, colors, axes, and labels. `Analytics` is used for such elements as forecasts, trendlines, reference lines, and shapes.
@@ -45,11 +101,6 @@ For the **Analytics** pane, the differences are as follows:
         "show": {
           "type": {
             "bool": true
-          }
-        },
-        "displayName": {
-          "type": {
-            "text": true
           }
         },
       ... //any other properties for your Analytics card
